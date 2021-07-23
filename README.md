@@ -2,7 +2,7 @@
 
 ## Getting Started
 ```
-git clone https://github.com/chromascore/twigrapher_datafetcher.git
+git clone https://github.com/chromascore/twigrapher-downloader.git
 cd src
 // run createTable.sql. I do so with copying and pasting the content of the file into MySQLWorkbench.
 /* modify the bottom of twiAPI_to_myDB_uauth.py (un-comment out getTweets('chromascore') and put your the screenname of the Twitter account whose Tweets you want to download instead of 'chromascore', which is my struggling-with-playing-the-piano-and-studying-whatever-arts-and-daily-shitposts account */
