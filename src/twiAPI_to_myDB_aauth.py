@@ -10,6 +10,8 @@ import secretkeys
 
 # GET from twitter API ---------------------------------------------------------
 
+USER_NAME = secretkeys.USER_NAME
+
 # use your own access keys for Twitter API
 # the type is: {'Authorization': 'Bearer ...'}
 headers = secretkeys.headers
@@ -346,7 +348,7 @@ def selectFromDB(hostname, uname, dbname, theCharset, table, cols, where):
 
 def getLatestTweetID(screen_name):
     
-    latest = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'tweets', ['id_str'], "WHERE user_screen_name = '{}' ORDER BY id_str DESC LIMIT 1".format(screen_name))
+    latest = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'tweets', ['id_str'], "WHERE user_screen_name = '{}' ORDER BY id_str DESC LIMIT 1".format(screen_name))
     
     if type(latest) != tuple:
         obj = latest[0]
@@ -360,7 +362,7 @@ def getFavCountDiff(screen_name):
     previous_fav_count = 0
 
     try:
-        previous_fav_count = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', ['fav_count'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['fav_count']
+        previous_fav_count = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', ['fav_count'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['fav_count']
     except:
         1 + 1
         
@@ -404,7 +406,7 @@ def addToFollowings(screen_name, ff_profiles, f_or_f):
             ff_json = json.loads(ff_profiles[i])
             vals.append([int(follower[0].get('id_str')), screen_name, follower[0].get('name'), int(ff_json.get('id_str')), ff_json.get('screen_name'), ff_json.get('name')])
 
-        insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'followings', cols, vals)
+        insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'followings', cols, vals)
     elif f_or_f == 'getFollowers':
         
         params = (
@@ -422,17 +424,17 @@ def addToFollowings(screen_name, ff_profiles, f_or_f):
             ff_json = json.loads(ff_profiles[i])
             vals.append([int(followee[0].get('id_str')), screen_name, followee[0].get('name'), int(ff_json.get('id_str')), ff_json.get('screen_name'), ff_json.get('name')])
 
-        insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'followings', cols, vals)
+        insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'followings', cols, vals)
 
 def addToUsers(user, screen_name):
 
     request = prepareRequestValsArray(['request_type', 'json_col'],'getAllNewFriendsByScreenName', user)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
 
-    profiles = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFriendsByScreenName'")
+    profiles = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFriendsByScreenName'")
     req = formRequestArray(profiles, 'getAllNewFriendsByScreenName', screen_name)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', req[0], req[1])
-    updateExtractedFlag('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFriendsByScreenName'")
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', req[0], req[1])
+    updateExtractedFlag('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFriendsByScreenName'")
 
 
 def tweetExtract(tw):
@@ -1759,11 +1761,11 @@ def updateExtractedFlag(hostname, uname, dbname, theCharset, table, cols, vals, 
 # also does update_last_fav_fetch_time
 def updateFavCount(screen_name):
 
-    current_fav_count = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', ['user_favourites_count'], "WHERE user_screen_name = '{}'".format(screen_name))
+    current_fav_count = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', ['user_favourites_count'], "WHERE user_screen_name = '{}'".format(screen_name))
 
     current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(str(datetime.datetime.now()),'%Y-%m-%d %H:%M:%S.%f'))
 
-    updateDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', [['fav_count', 'last_fav_fetch_time']], [[current_fav_count[0]['user_favourites_count'], "'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
+    updateDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', [['fav_count', 'last_fav_fetch_time']], [[current_fav_count[0]['user_favourites_count'], "'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
 
 # calls 1 time: twitter API users/lookup.json
 # also makes sure the user is in the user list
@@ -1774,7 +1776,7 @@ def update_last_tweet_fetch_time(screen_name):
     last_tweet_fetch_time = current_time
 
     try:
-        last_tweet_fetch_time = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', ['last_tweet_fetch_time'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['last_tweet_fetch_time']
+        last_tweet_fetch_time = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', ['last_tweet_fetch_time'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['last_tweet_fetch_time']
     except:
         1 + 1
         
@@ -1791,7 +1793,7 @@ def update_last_tweet_fetch_time(screen_name):
         addToUsers([user_str], screen_name)
 
     
-    updateDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', [['last_tweet_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
+    updateDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', [['last_tweet_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
 
     update_last_user_fetch_time(screen_name)
 
@@ -1799,7 +1801,7 @@ def update_last_user_fetch_time(screen_name):
 
     current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.strptime(str(datetime.datetime.now()),'%Y-%m-%d %H:%M:%S.%f'))
     
-    updateDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', [['last_user_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
+    updateDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', [['last_user_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
 
 # calls 1 time: twitter API users/lookup.json
 # also makes sure the user is in the user list, and update_last_user_fetch_time.
@@ -1810,7 +1812,7 @@ def update_last_followers_fetch_time(screen_name):
     last_followers_fetch_time = current_time
 
     try:
-        last_followers_fetch_time = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', ['last_followers_fetch_time'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['last_followers_fetch_time']
+        last_followers_fetch_time = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', ['last_followers_fetch_time'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['last_followers_fetch_time']
     except:
         1 + 1
         
@@ -1827,7 +1829,7 @@ def update_last_followers_fetch_time(screen_name):
         addToUsers([user_str], screen_name)
 
     
-    updateDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', [['last_followers_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
+    updateDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', [['last_followers_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
     update_last_user_fetch_time(screen_name)
 
 # calls 1 time: twitter API users/lookup.json
@@ -1839,7 +1841,7 @@ def update_last_friends_fetch_time(screen_name):
     last_friends_fetch_time = current_time
 
     try:
-        last_friends_fetch_time = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', ['last_friends_fetch_time'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['last_friends_fetch_time']
+        last_friends_fetch_time = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', ['last_friends_fetch_time'], "WHERE user_screen_name = '{}'".format(screen_name))[0]['last_friends_fetch_time']
     except:
         1 + 1
         
@@ -1856,7 +1858,7 @@ def update_last_friends_fetch_time(screen_name):
         addToUsers([user_str], screen_name)
 
     
-    updateDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', [['last_friends_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
+    updateDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', [['last_friends_fetch_time']], [["'{}'".format(current_time)]], "WHERE user_screen_name = '{}'".format(screen_name))
     update_last_user_fetch_time(screen_name)
 
 
@@ -1899,14 +1901,14 @@ def getTweets(screen_name):
         print('Not authorized.')
         return
     request = prepareRequestValsArray(['request_type', 'json_col'],'getAllNewTweetsByScreenName', tws)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
     update_last_tweet_fetch_time(screen_name)
 
     # AllFromTwitterAPI から 取ってきたtweetsを tweetExtractして tweetsに格納
-    tws = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewTweetsByScreenName'")
+    tws = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewTweetsByScreenName'")
     req = formRequestArray(tws, 'getAllNewTweetsByScreenName')
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'tweets', req[0], req[1])
-    updateExtractedFlag('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0 AND request_type = 'getAllNewTweetsByScreenName'")
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'tweets', req[0], req[1])
+    updateExtractedFlag('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0 AND request_type = 'getAllNewTweetsByScreenName'")
 
 # --------------
 # fav版 done
@@ -1920,13 +1922,13 @@ def getFavs(screen_name):
         print('Not authorized.')
         return
     request = prepareRequestValsArray(['request_type', 'json_col'],'getAllNewFavsByScreenName', favs)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
     updateFavCount(screen_name)
 
-    favs = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFavsByScreenName'")
+    favs = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFavsByScreenName'")
     req = formRequestArray(favs, 'getAllNewFavsByScreenName', screen_name)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'favs', req[0], req[1])
-    updateExtractedFlag('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFavsByScreenName'")
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'favs', req[0], req[1])
+    updateExtractedFlag('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFavsByScreenName'")
 
 # --------------
 # user版 done
@@ -1943,16 +1945,16 @@ def getFriends(screen_name):
 
     addToFollowings(screen_name, profiles, 'getFriends')
     request = prepareRequestValsArray(['request_type', 'json_col'],'getAllNewFriendsByScreenName', profiles)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
 
-    profiles = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFriendsByScreenName'")
+    profiles = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFriendsByScreenName'")
     req = formRequestArray(profiles, 'getAllNewFriendsByScreenName', screen_name)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', req[0], req[1])
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', req[0], req[1])
     for user in profiles:
         jsonCol = user["json_col"]
         jsoned = json.loads(jsonCol)
         update_last_user_fetch_time(jsoned['screen_name'])
-    updateExtractedFlag('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFriendsByScreenName'")
+    updateExtractedFlag('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFriendsByScreenName'")
     update_last_friends_fetch_time(screen_name)
 
 # twitter API followers/ids: 15/15min limit: calls max 1 time
@@ -1966,16 +1968,16 @@ def getFollowers(screen_name):
     profiles = convertToUserProfiles(user_ids)
     addToFollowings(screen_name, profiles, 'getFollowers')
     request = prepareRequestValsArray(['request_type', 'json_col'],'getAllNewFollowersByScreenName', profiles)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', request[0], request[1])
 
-    profiles = selectFromDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFollowersByScreenName'")
+    profiles = selectFromDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', ['id', 'json_col', 'extracted'], "WHERE extracted = 0 AND request_type = 'getAllNewFollowersByScreenName'")
     req = formRequestArray(profiles, 'getAllNewFollowersByScreenName', screen_name)
-    insertToDB('localhost', 'kai', 'twigrapher', 'utf8mb4', 'users', req[0], req[1])
+    insertToDB('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'users', req[0], req[1])
     for user in profiles:
         jsonCol = user["json_col"]
         jsoned = json.loads(jsonCol)
         update_last_user_fetch_time(jsoned['screen_name'])
-    updateExtractedFlag('localhost', 'kai', 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFollowersByScreenName'")
+    updateExtractedFlag('localhost', USER_NAME, 'twigrapher', 'utf8mb4', 'AllFromTwitterAPI', [['extracted']], [[1]], "WHERE extracted = 0  AND request_type = 'getAllNewFollowersByScreenName'")
     update_last_followers_fetch_time(screen_name)
 
 # main -------------

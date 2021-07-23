@@ -5,10 +5,11 @@
 git clone https://github.com/chromascore/twigrapher-downloader.git
 cd src
 // run createTable.sql. I do so with copying and pasting the content of the file into MySQLWorkbench.
-/* modify the bottom of twiAPI_to_myDB_uauth.py (un-comment out getTweets('chromascore') and put your the screenname of the Twitter account whose Tweets you want to download instead of 'chromascore', which is my struggling-with-playing-the-piano-and-studying-whatever-arts-and-daily-shitposts account */
-/* alter the username from 'kai' (mine) to your own in twiAPI_to_myDB...py. There are a lot of instances. I'm sorry I will update it soon for a public release */
+/* modify the bottom of twiAPI_to_myDB_uauth.py (if needed, un-comment out getTweets('chromascore') and put the screenname of your Twitter account whose Tweets you want to download instead of 'chromascore', which is my struggling-with-playing-the-piano-and-studying-whatever-arts-and-daily-shitposts account */
 touch secretkeys.py
 /* open secretkey.py and write and add values to below:
+
+  USER_NAME = '//the username of your computer that you are using now'
 
   headers = {
     'Authorization': 'Bearer //get the bearer token from Twitter Dev account and put it here'
