@@ -1,4 +1,4 @@
-# Twigrapher Datafetcher
+# Twigrapher Downloader
 
 ## Getting Started
 ```
